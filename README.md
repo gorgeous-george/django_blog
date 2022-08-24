@@ -8,8 +8,7 @@ summary django project
 - created README.md, requirements.txt, .gitignore
 - installed flake8
 - configured Travis CI
-
-
+***
 - started django server
 - secured django secret key
 - made initial migrations
@@ -20,7 +19,6 @@ summary django project
 - installed celery
 - configured redis cache
 - configured email backend (console)
-
-
+***
 - started new app, updated settings.py
 - created models
