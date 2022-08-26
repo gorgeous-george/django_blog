@@ -1,0 +1,27 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>{{ blogpost.title }}</h1>
+<p><strong>Posted</strong> {{ blogpost.published_date }}</p>
+<p><strong>Author:</strong> <a href="{% url 'blogs-by-author' blogpost.author.pk %}">{{ blogpost.author }}</a></p>
+<p><strong>Full text:</strong></p>
+<p style="white-space:pre-wrap;">{{ blogpost.full_text }}</p>
+
+<div style="margin-left:20px;margin-top:20px">
+<h4>Comments</h4>
+
+{% for comment in blogpost.blogcomment_set.all %}
+<hr>
+<p>{{comment.author}} ({{comment.post_date}}) - {{comment.description}}</p>
+{% endfor %}
+<hr>
+{% if user.is_authenticated %}
+  <a href="{% url 'blog_comment' blogpost.id %}">Add a new comment</a></p>
+{% else %}
+  <p><a href="{% url 'login'%}?next={{request.path}}">Login</a> to add a new comment</p>
+{% endif %} 
+
+
+</div>
+{% endblock %}

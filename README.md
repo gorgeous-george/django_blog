@@ -19,6 +19,10 @@ summary django project
 - installed celery
 - configured redis cache
 - configured email backend (console)
+- created celery tasks (sending email)
 ***
 - started new app, updated settings.py
-- created models
+- drafted models
+- drafted base_generic template and empty templates for all future views
+- drafted all required views
+- drafted urls for the views
