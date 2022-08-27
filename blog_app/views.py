@@ -21,7 +21,7 @@ from django.urls import reverse, reverse_lazy
 from django.views import generic
 
 
-from .tasks import send_mail as celery_send_mail
+from .tasks import send_email_task as celery_send_mail
 
 
 def index(request):
@@ -37,14 +37,9 @@ def contact_form(request):
         if form.is_valid():
             subject = form.cleaned_data['subject']
             from_email = form.cleaned_data['from_email']
-            message = form.cleaned_data['message']
-            celery_send_mail.delay(subject, message, from_email) #TODO: to fix bug
+            message_text = form.cleaned_data['message']
+            celery_send_mail.delay(subject, message_text, from_email)
             messages.add_message(request, messages.SUCCESS, 'Message sent')
-            # try:
-            #     send_mail(subject, message, from_email, ['admin@example.com'])
-            #     messages.add_message(request, messages.SUCCESS, 'Message sent')
-            # except BadHeaderError:
-            #     messages.add_message(request, messages.ERROR, 'Message not sent')
             return redirect('contact')
     else:
         form = ContactFrom()
@@ -57,14 +52,16 @@ def contact_form(request):
     )
 
 
-class RegisterFormView(generic.FormView):
+class RegisterFormView(SuccessMessageMixin, generic.FormView):
     template_name = 'registration/register.html'
     form_class = RegisterForm
+    success_message = "Profile has been registered"
     success_url = reverse_lazy("index")
 
     def form_valid(self, form):
         user = form.save()
-        user = authenticate(username=user.username, password=user.password) #TODO: to fix bug
+        password = form.cleaned_data.get("password1")
+        user = authenticate(username=user.username, password=password)
         login(self.request, user)
         return super(RegisterFormView, self).form_valid(form)
 
