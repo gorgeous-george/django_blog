@@ -36,7 +36,7 @@ class BlogPost(models.Model):
     title = models.CharField(max_length=200)
     short_text = models.CharField(max_length=200)
     full_text = models.TextField()
-    image = models.ImageField(upload_to='blog/images/', default='image.png')
+    image = models.ImageField(upload_to='blog/')
     created_date = models.DateTimeField(default=timezone.now)
     published_date = models.DateTimeField(blank=True, null=True)
     is_published = models.BooleanField

@@ -5,6 +5,7 @@
 <h1>{{ blogpost.title }}</h1>
 <p><strong>Posted</strong> {{ blogpost.published_date }}</p>
 <p><strong>Author:</strong> <a href="{% url 'blogs-by-author' blogpost.author.pk %}">{{ blogpost.author }}</a></p>
+<p><img src="{{ blogpost.image.url }} "class="img-responsive" alt={{ blogpost.image }}></p>
 <p><strong>Full text:</strong></p>
 <p style="white-space:pre-wrap;">{{ blogpost.full_text }}</p>
 

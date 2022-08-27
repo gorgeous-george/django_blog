@@ -183,9 +183,18 @@ class BlogCommentCreate(CreateView):
         """
         return reverse('blog-detail', kwargs={'pk': self.kwargs['pk'], })
 
-class BlogPostCreate(LoginRequiredMixin,generic.CreateView):
+
+class BlogPostCreate(LoginRequiredMixin, generic.CreateView):
     model = BlogPost
     fields = ['title', 'short_text', 'full_text', 'created_date', 'published_date', 'image']
     initial = {
         'published_date': datetime.datetime.now(),
     }
+
+    def form_valid(self, form):
+        """
+        Add author and associated blog to form data before setting it as valid (so it is saved to model)
+        """
+        #Add logged-in user as author of comment
+        form.instance.author = self.request.user
+        return super(BlogPostCreate, self).form_valid(form)
