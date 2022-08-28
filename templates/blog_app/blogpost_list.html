@@ -12,7 +12,7 @@
           <img src="{{ blogpost.image.url }}" class="img-responsive" style="width: 30px; height:30px;" />
           <a href="{{ blogpost.get_absolute_url }}">{{ blogpost.title }}</a>
           {{ blogpost.short_text }}... —
-          written by <a href="{% url 'blogs-by-author' blogpost.author_id %}"> {{ blogpost.author }}</a>
+          published by <a href="{% url 'blogs-by-author' blogpost.author_id %}"> {{ blogpost.author }}</a>
           at {{ blogpost.published_date }}
           </li>
           <br>
@@ -21,6 +21,6 @@
     </ul>
 
     {% else %}
-      <p>There are no blogs.</p>
+      <p>There are no published blogs.</p>
     {% endif %}
 {%  endblock %}

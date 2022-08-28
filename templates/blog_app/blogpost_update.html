@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+    {% if request.user.is_authenticated and blogpost.author_id == request.user.id %}
+        <form method="POST" class="form-group">
+            {% csrf_token %}
+            <table>
+              {{ form.as_table }}
+            </table>
+            <button type="submit" class="btn btn-success">Update</button>
+        </form>
+    {% else %}
+    <p>Access Denied - only the author can edit the post</p>
+    {% endif %}
+
+{% endblock %}

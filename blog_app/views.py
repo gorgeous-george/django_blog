@@ -1,35 +1,42 @@
 import datetime
-import time
 
-from django.contrib.messages.views import SuccessMessageMixin
-from django.db import transaction
+from .tasks import send_email_task as celery_send_mail
 
 from blog_app.forms import ContactFrom, RegisterForm
 from blog_app.models import BlogAuthor, BlogPost, BlogComment
-
-from celery import Celery
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth.models import User #Blog author or commenter
-from django.core.mail import BadHeaderError, send_mail
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.models import User
+from django.contrib.messages.views import SuccessMessageMixin
+from django.core.paginator import Paginator
+from django.db.models import Count
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
+from django.views.decorators.cache import cache_page
 
 
-from .tasks import send_email_task as celery_send_mail
-
-
+@cache_page(20)
 def index(request):
     """View function for home page of site."""
+    b_count = BlogPost.objects.filter(is_published=True).annotate(blogposts_count=Count('author'))
+    count = b_count.count()
+    paginator = Paginator(b_count, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     return render(
         request,
         'index.html',
+        context={
+            'page_obj': page_obj,
+            'count': count,
+        }
     )
+
 
 def contact_form(request):
     if request.method == "POST":
@@ -98,8 +105,12 @@ class BlogListView(generic.ListView):
     model = BlogPost
     paginate_by = 5
 
-
-from django.shortcuts import get_object_or_404
+    def get_queryset(self):
+        """
+        Return list of Blog objects having "is_published = True"
+        """
+        queryset = BlogPost.objects.filter(is_published=True)
+        return queryset
 
 
 class BlogListbyAuthorView(generic.ListView):
@@ -115,12 +126,13 @@ class BlogListbyAuthorView(generic.ListView):
         Return list of Blog objects created by BlogAuthor (author id specified in URL)
         """
         id = self.kwargs['pk']
-        target_author=get_object_or_404(BlogAuthor, pk = id)
-        return BlogPost.objects.filter(author=target_author)
+        author = get_object_or_404(BlogAuthor, pk=id)
+        queryset = BlogPost.objects.filter(author=author, is_published=True)
+        return queryset
 
     def get_context_data(self, **kwargs):
         """
-        Add BlogAuthor to context so they can be displayed in the template
+        Add BlogAuthor to context, so they can be displayed in the template
         """
         # Call the base implementation first to get a context
         context = super(BlogListbyAuthorView, self).get_context_data(**kwargs)
@@ -134,6 +146,13 @@ class BlogDetailView(generic.DetailView):
     Generic class-based detail view for a blog.
     """
     model = BlogPost
+    paginate_using = BlogComment
+    paginate_by = 5
+
+    def get_context_data(self, **kwargs):
+        object_list = BlogComment.objects.filter(is_published=True, commented_post=self.get_object())  # TODO: fix comment pagination
+        context = super(BlogDetailView, self).get_context_data(object_list=object_list, **kwargs)
+        return context
 
 
 class BloggerListView(generic.ListView):
@@ -144,12 +163,7 @@ class BloggerListView(generic.ListView):
     paginate_by = 5
 
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import CreateView
-from django.urls import reverse
-
-
-class BlogCommentCreate(CreateView):
+class BlogCommentCreate(generic.CreateView):
     """
     Form for adding a blog comment. Requires login.
     """
@@ -171,7 +185,12 @@ class BlogCommentCreate(CreateView):
         Add associated blog to form data before setting it as valid (so it is saved to model)
         """
         # Associate comment with blog based on passed id
-        form.instance.commented_post = get_object_or_404(BlogPost, pk=self.kwargs['pk'])
+        post = get_object_or_404(BlogPost, pk=self.kwargs['pk'])
+        form.instance.commented_post = post
+        subject = 'new comment has been added'
+        from_email = 'noreply@myblog.com'
+        message_text = post.title+' received a new comment: "'+form.cleaned_data['comment_text']+'"'
+        celery_send_mail.delay(subject, message_text, from_email)
         # Call super-class form validation behaviour
         return super(BlogCommentCreate, self).form_valid(form)
 
@@ -190,5 +209,26 @@ class BlogPostCreate(LoginRequiredMixin, generic.CreateView):
     }
 
     def form_valid(self, form):
-        form.instance.author = BlogAuthor.objects.get(user_id=self.request.user.id)
+        author = BlogAuthor.objects.get(user_id=self.request.user.id)
+        form.instance.author = author
+        subject = 'new post has been created'
+        from_email = 'noreply@myblog.com'
+        message_text = author.user.username+' created new post "'+form.cleaned_data['title']+'"'
+        celery_send_mail.delay(subject, message_text, from_email)
         return super(BlogPostCreate, self).form_valid(form)
+
+
+class BlogPostUpdate(LoginRequiredMixin, SuccessMessageMixin, generic.UpdateView):
+    model = BlogPost
+    fields = ['title', 'short_text', 'full_text', 'created_date', 'published_date', 'image', 'is_published']
+    initial = {
+        'published_date': datetime.datetime.now(),
+    }
+    template_name = 'blog_app/blogpost_update.html'
+    success_message = "Blog post was updated"
+
+    def get_success_url(self):
+        """
+        After posting comment return to associated blog.
+        """
+        return reverse('blog-detail', kwargs={'pk': self.kwargs['pk'], })

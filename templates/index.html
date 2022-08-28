@@ -1,23 +1,35 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-  <h1>Blog Home</h1>
 
-  <p>Welcome to <em>My Blog</em></p>
+    <h1>Welcome to <em>My Blog</em></h1>
 
-{#  {% cache 10 num_books num_instances num_instances_available num_authors %}#}
-{#  <h2>Dynamic content</h2>#}
-{##}
-{#  <p>The library has the following record counts:</p>#}
-{#  <ul>#}
-{#    <li><strong>Books:</strong> {{ num_books }}</li>#}
-{#    <li><strong>Copies:</strong> {{ num_instances }}</li>#}
-{#    <li><strong>Copies available:</strong> {{ num_instances_available }}</li>#}
-{#    <li><strong>Authors:</strong> {{ num_authors }}</li>#}
-{#  </ul>#}
-{#  {% endcache %}#}
+    <p>There are {{ count }} recently published posts</p>
 
+    {% for post in page_obj %}
+        <ul>
+            <li>
+                <b>{{ post.author }}</b> published <b>"{{ post.title }}"</b> post
+                that has {{ post.blogcomment_set.count }} comments </li>
+        </ul>
+    {% endfor %}
 
-{#  You have visited this page {{ num_visits }} time{% if num_visits > 1 %}s{% endif %}.#}
+    <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
 
 {% endblock %}
