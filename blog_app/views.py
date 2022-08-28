@@ -143,9 +143,6 @@ class BloggerListView(generic.ListView):
     model = BlogAuthor
     paginate_by = 5
 
-    # def get_queryset(self):
-    #     return super(BloggerListView, self).get_queryset().select_related("user")
-
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView
@@ -154,29 +151,27 @@ from django.urls import reverse
 
 class BlogCommentCreate(CreateView):
     """
-    Form for adding a blog comment.
+    Form for adding a blog comment. Requires login.
     """
     model = BlogComment
-    fields = ['description', ]
+    fields = ['commenter', 'comment_text']
 
     def get_context_data(self, **kwargs):
         """
         Add associated blog to form template so can display its title in HTML.
         """
         # Call the base implementation first to get a context
-        context = super(BlogCommentCreate, self).get_context_data(**kwargs) #TODO: to fix the bug
+        context = super(BlogCommentCreate, self).get_context_data(**kwargs)
         # Get the blog from id and add it to the context
-        context['blog'] = get_object_or_404(BlogPost, pk=self.kwargs['pk'])
+        context['blogpost'] = get_object_or_404(BlogPost, pk=self.kwargs['pk'])
         return context
 
     def form_valid(self, form):
         """
-        Add author and associated blog to form data before setting it as valid (so it is saved to model)
+        Add associated blog to form data before setting it as valid (so it is saved to model)
         """
-        # Add logged-in user as author of comment
-        form.instance.author = self.request.user
         # Associate comment with blog based on passed id
-        form.instance.blog = get_object_or_404(BlogPost, pk=self.kwargs['pk'])
+        form.instance.commented_post = get_object_or_404(BlogPost, pk=self.kwargs['pk'])
         # Call super-class form validation behaviour
         return super(BlogCommentCreate, self).form_valid(form)
 
@@ -195,5 +190,5 @@ class BlogPostCreate(LoginRequiredMixin, generic.CreateView):
     }
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
+        form.instance.author = BlogAuthor.objects.get(user_id=self.request.user.id)
         return super(BlogPostCreate, self).form_valid(form)

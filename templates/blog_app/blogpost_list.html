@@ -11,9 +11,9 @@
           <li>
           <img src="{{ blogpost.image.url }}" class="img-responsive" style="width: 30px; height:30px;" />
           <a href="{{ blogpost.get_absolute_url }}">{{ blogpost.title }}</a>
-          ({{blogpost.published_date}}) —
-          {{ blogpost.short_text }} —
-          written by <a href="{% url 'blogs-by-author' blogpost.author.pk %}"> {{ blogpost.author }}</a>
+          {{ blogpost.short_text }}... —
+          written by <a href="{% url 'blogs-by-author' blogpost.author_id %}"> {{ blogpost.author }}</a>
+          at {{ blogpost.published_date }}
           </li>
           <br>
       {% endfor %}

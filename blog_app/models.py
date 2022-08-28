@@ -65,7 +65,7 @@ class BlogComment(models.Model):
     comment_text = models.TextField(max_length=1000, help_text="Enter comment about blog here.")
     comment_date = models.DateTimeField(auto_now_add=True)
     commented_post = models.ForeignKey(BlogPost, on_delete=models.CASCADE)
-    is_published = models.BooleanField
+    is_published = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-comment_date"]

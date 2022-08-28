@@ -44,7 +44,7 @@
 
         <ul class="sidebar-nav">
           {% if user.is_authenticated %}
-            <li>User: {{ user.get_username }}</li>
+            <li>Logged as: {{ user.get_username }}</li>
             <li><a href="{% url 'blog-create' %}">Create new post</a></li>
             <li><a href="{% url 'profile' %}">My profile</a></li>
             <li><a href="{% url 'logout' %}?next={{ request.path }}">Logout</a></li>
@@ -57,7 +57,7 @@
         {% if user.is_staff %}
           <hr/>
           <ul class="sidebar-nav">
-            <li>Staff</li>
+            <li>Staff tools:</li>
             {% if perms.catalog.can_mark_returned %}
               <li><a href="{% url 'admin:app_list' app_label='blog_app' %}">Admin module</a></li>
             {% endif %}
