@@ -1,6 +1,7 @@
 import datetime
 
-from .tasks import send_email_task as celery_send_mail
+from blog_app.tasks import send_email_task as celery_send_mail
+from blog_app.tasks import send_email_to_author_task as celery_send_mail_to_author
 
 from blog_app.forms import ContactFrom, RegisterForm
 from blog_app.models import BlogAuthor, BlogPost, BlogComment
@@ -15,7 +16,7 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect, render
-from django.urls import reverse, reverse_lazy
+from django.urls import path, reverse, reverse_lazy
 from django.views import generic
 from django.views.decorators.cache import cache_page
 
@@ -150,7 +151,7 @@ class BlogDetailView(generic.DetailView):
     paginate_by = 5
 
     def get_context_data(self, **kwargs):
-        object_list = BlogComment.objects.filter(is_published=True, commented_post=self.get_object())  # TODO: fix comment pagination
+        object_list = BlogComment.objects.filter(is_published=True, commented_post=self.get_object())  # TODO: fix comment pagination and is_published
         context = super(BlogDetailView, self).get_context_data(object_list=object_list, **kwargs)
         return context
 
@@ -187,10 +188,21 @@ class BlogCommentCreate(generic.CreateView):
         # Associate comment with blog based on passed id
         post = get_object_or_404(BlogPost, pk=self.kwargs['pk'])
         form.instance.commented_post = post
+
+        # Sending email to helpdesk
         subject = 'new comment has been added'
-        from_email = 'noreply@myblog.com'
+        from_email = 'noreply@my_blog.com'
         message_text = post.title+' received a new comment: "'+form.cleaned_data['comment_text']+'"'
         celery_send_mail.delay(subject, message_text, from_email)
+
+        # Sending email to author
+        url = reverse('blog-detail', kwargs={'pk': self.kwargs['pk'], })
+        link = path(url, BlogDetailView.as_view())
+        subject = 'new comment has been added to your post'
+        author_email = [post.author.user.email]
+        message_text = post.title+' received a new comment: "'+form.cleaned_data['comment_text']+'" '+f"{link}" # TODO: fix
+        celery_send_mail_to_author.delay(subject, message_text, author_email)
+
         # Call super-class form validation behaviour
         return super(BlogCommentCreate, self).form_valid(form)
 
@@ -212,7 +224,7 @@ class BlogPostCreate(LoginRequiredMixin, generic.CreateView):
         author = BlogAuthor.objects.get(user_id=self.request.user.id)
         form.instance.author = author
         subject = 'new post has been created'
-        from_email = 'noreply@myblog.com'
+        from_email = 'noreply@my_blog.com'
         message_text = author.user.username+' created new post "'+form.cleaned_data['title']+'"'
         celery_send_mail.delay(subject, message_text, from_email)
         return super(BlogPostCreate, self).form_valid(form)
