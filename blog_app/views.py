@@ -115,8 +115,8 @@ class BlogListbyAuthorView(generic.ListView):
         Return list of Blog objects created by BlogAuthor (author id specified in URL)
         """
         id = self.kwargs['pk']
-        target_author = get_object_or_404(BlogAuthor, pk=id)
-        return BlogPost.objects.filter(author=target_author) #TODO: to fix the bug
+        target_author=get_object_or_404(BlogAuthor, pk = id)
+        return BlogPost.objects.filter(author=target_author)
 
     def get_context_data(self, **kwargs):
         """
@@ -142,6 +142,9 @@ class BloggerListView(generic.ListView):
     """
     model = BlogAuthor
     paginate_by = 5
+
+    # def get_queryset(self):
+    #     return super(BloggerListView, self).get_queryset().select_related("user")
 
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -186,15 +189,11 @@ class BlogCommentCreate(CreateView):
 
 class BlogPostCreate(LoginRequiredMixin, generic.CreateView):
     model = BlogPost
-    fields = ['title', 'short_text', 'full_text', 'created_date', 'published_date', 'image']
+    fields = ['title', 'short_text', 'full_text', 'created_date', 'published_date', 'image', 'is_published']
     initial = {
         'published_date': datetime.datetime.now(),
     }
 
     def form_valid(self, form):
-        """
-        Add author and associated blog to form data before setting it as valid (so it is saved to model)
-        """
-        #Add logged-in user as author of comment
         form.instance.author = self.request.user
         return super(BlogPostCreate, self).form_valid(form)

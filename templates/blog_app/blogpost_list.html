@@ -2,6 +2,7 @@
 
 {% block content %}
 <h1>All posts</h1>
+<hr>
 
     {% if blogpost_list %}
     <ul>
@@ -11,8 +12,8 @@
           <img src="{{ blogpost.image.url }}" class="img-responsive" style="width: 30px; height:30px;" />
           <a href="{{ blogpost.get_absolute_url }}">{{ blogpost.title }}</a>
           ({{blogpost.published_date}}) —
-          {{ blogpost.short_text }}
-          <a href="{% url 'blogs-by-author' blogpost.author.pk %}">{{ blogpost.author }}</a>
+          {{ blogpost.short_text }} —
+          written by <a href="{% url 'blogs-by-author' blogpost.author.pk %}"> {{ blogpost.author }}</a>
           </li>
           <br>
       {% endfor %}

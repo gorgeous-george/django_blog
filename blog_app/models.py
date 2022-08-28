@@ -5,7 +5,7 @@ from django.urls import reverse #Used to generate URLs by reversing the URL patt
 from django.contrib.auth.models import User #Blog author or commenter
 
 
-class BlogAuthor(models.Model): #to fix the bug with User instance
+class BlogAuthor(models.Model):
     """
     Model representing a blogger.
     """
@@ -32,14 +32,14 @@ class BlogPost(models.Model):
     """
     Model representing a blog post.
     """
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    author = models.ForeignKey(BlogAuthor, on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200)
     short_text = models.CharField(max_length=200)
     full_text = models.TextField()
     image = models.ImageField(upload_to='blog/')
     created_date = models.DateTimeField(default=timezone.now)
     published_date = models.DateTimeField(blank=True, null=True)
-    is_published = models.BooleanField
+    is_published = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-created_date"]
