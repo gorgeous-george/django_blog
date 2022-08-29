@@ -24,11 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     # ...
-    "127.0.0.1",
+    "127.0.0.1",            # todo: to add allowed hosts for prod
     # ...
 ]
 
@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'my_blog.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # todo: real DB config
+        'ENGINE': 'django.db.backends.sqlite3',  # todo: to update DB config for prod
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
@@ -125,9 +125,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'                          # todo: update settings
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
+STATIC_URL = 'static/'                          # todo: update settings for prod
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')    # todo: update settings for prod
+MEDIA_URL = '/media/'                           # todo: update settings for prod
 
 
 # Default primary key field type
@@ -144,20 +144,20 @@ INTERNAL_IPS = [
 ]
 
 # Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # todo: update email backend
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # todo: update email backend for prod
 
 # Celery Configuration Options
 CELERY_TIMEZONE = 'Europe/Kiev'
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = 'redis://localhost:6379/0'       # todo: update broker backend for prod
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'   # todo: update result backend for prod
 
 # Redis Cache settings
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379',
+        'LOCATION': 'redis://127.0.0.1:6379',                       # todo: update cache location for prod
     }
 }
 
