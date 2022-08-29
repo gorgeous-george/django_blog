@@ -2,8 +2,9 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse #Used to generate URLs by reversing the URL patterns
-from django.contrib.auth.models import User #Blog author or commenter
+from django.contrib.auth import get_user_model #Blog author or commenter
 
+User = get_user_model()
 
 class BlogAuthor(models.Model):
     """
