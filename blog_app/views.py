@@ -20,6 +20,8 @@ from django.urls import path, reverse, reverse_lazy
 from django.views import generic
 from django.views.decorators.cache import cache_page
 
+from my_blog import settings
+
 
 @cache_page(20)
 def index(request):
@@ -147,12 +149,24 @@ class BlogDetailView(generic.DetailView):
     Generic class-based detail view for a blog.
     """
     model = BlogPost
-    paginate_using = BlogComment
-    paginate_by = 5
 
     def get_context_data(self, **kwargs):
-        object_list = BlogComment.objects.filter(is_published=True, commented_post=self.get_object())  # TODO: fix comment pagination and is_published
-        context = super(BlogDetailView, self).get_context_data(object_list=object_list, **kwargs)
+        comments = self.get_object().blogcomment_set.filter(is_published=True)
+        # comments = BlogComment.objects.filter(is_published=True, commented_post=self.get_object())
+        paginator = Paginator(comments, 5)
+        try:
+            page_num = int(self.request.GET.get("page", 1))
+        except ValueError:
+            print('incorrect page number')
+        try:
+            page = paginator.page(page_num)
+        except ValueError:
+            print('incorrect page number')
+        context = super().get_context_data(**kwargs)
+        context["comments"] = comments
+        context["paginator"] = paginator
+        context["page_obj"] = page
+        context["is_paginated"] = True
         return context
 
 
@@ -197,10 +211,10 @@ class BlogCommentCreate(generic.CreateView):
 
         # Sending email to author
         url = reverse('blog-detail', kwargs={'pk': self.kwargs['pk'], })
-        link = path(url, BlogDetailView.as_view())
+        link = f"{settings.SCHEMA}://{settings.DOMAIN}{url}"
         subject = 'new comment has been added to your post'
         author_email = [post.author.user.email]
-        message_text = post.title+' received a new comment: "'+form.cleaned_data['comment_text']+'" '+f"{link}" # TODO: fix
+        message_text = post.title+' received a new comment: "'+form.cleaned_data['comment_text']+'" '+link
         celery_send_mail_to_author.delay(subject, message_text, author_email)
 
         # Call super-class form validation behaviour

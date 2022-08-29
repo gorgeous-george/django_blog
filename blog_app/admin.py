@@ -14,7 +14,7 @@ class BlogAuthorAdmin(admin.ModelAdmin):
 
 @admin.register(BlogComment)
 class BlogCommentAdmin(admin.ModelAdmin):
-    list_display = ["is_published", "commenter", "comment_text"]
+    list_display = ["is_published", "commented_post", "commenter", "comment_text"]
     list_filter = ["is_published"]
     actions = ["change_status_to_published"]
 
