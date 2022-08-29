@@ -33,9 +33,9 @@ class Command(BaseCommand):
 
         for _ in range(15):
             BlogPost.objects.create(
-                title=lorem.sentence(range=10),
-                short_text=lorem.sentence(range=20),
-                full_text=lorem.text(range=50),
+                title=lorem.sentence(),
+                short_text=lorem.sentence(),
+                full_text=lorem.text(),
                 created_date=datetime.datetime.now(),
                 published_date=datetime.datetime.now(),
                 image='blog/FB_IMG_1550259829926.jpg',
@@ -43,10 +43,10 @@ class Command(BaseCommand):
                 author_id=random.choice(authors_id_list),
             )
 
-        for _ in range(15):
+        for _ in range(1, 16):
             BlogComment.objects.create(
-                commenter=lorem.sentence(range=10),
-                comment_text=lorem.sentence(range=20),
+                commenter=lorem.sentence(),
+                comment_text=lorem.sentence(),
                 comment_date=datetime.datetime.now(),
                 commented_post_id=_,
                 is_published=random.randint(0, 1),
