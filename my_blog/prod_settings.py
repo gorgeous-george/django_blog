@@ -45,7 +45,6 @@ INSTALLED_APPS = [
 
     'django_celery_results',
     'django_extensions',
-    'debug_toolbar',
 
     'blog_app',
 ]
@@ -58,8 +57,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'my_blog.urls'
@@ -89,7 +86,7 @@ WSGI_APPLICATION = 'my_blog.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.sqlite3',  # todo: real DB config
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
@@ -128,7 +125,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = 'static/'                          # todo: update settings
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
@@ -147,7 +144,7 @@ INTERNAL_IPS = [
 ]
 
 # Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # todo: update email backend
 
 # Celery Configuration Options
 CELERY_TIMEZONE = 'Europe/Kiev'

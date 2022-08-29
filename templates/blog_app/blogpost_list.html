@@ -1,0 +1,26 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>All posts</h1>
+<hr>
+
+    {% if blogpost_list %}
+    <ul>
+
+      {% for blogpost in blogpost_list %}
+          <li>
+          <img src="{{ blogpost.image.url }}" class="img-responsive" style="width: 30px; height:30px;" />
+          <a href="{{ blogpost.get_absolute_url }}">{{ blogpost.title }}</a>
+          {{ blogpost.short_text }}... —
+          published by <a href="{% url 'blogs-by-author' blogpost.author_id %}"> {{ blogpost.author }}</a>
+          at {{ blogpost.published_date }}
+          </li>
+          <br>
+      {% endfor %}
+
+    </ul>
+
+    {% else %}
+      <p>There are no published blogs.</p>
+    {% endif %}
+{%  endblock %}

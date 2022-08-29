@@ -1,0 +1,23 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+    <a href="{% url 'blog-update' blogpost.pk %}">Update this post</a>
+    <h1>{{ blogpost.title }}</h1>
+    <p><strong>Published</strong> {{ blogpost.published_date }}</p>
+    <p><strong>Author:</strong> <a href="{% url 'blogs-by-author' blogpost.author.pk %}">{{ blogpost.author }}</a></p>
+    <p><img src="{{ blogpost.image.url }} "class="img-responsive" alt={{ blogpost.image }}></p>
+    <p><strong>Full text:</strong></p>
+    <p style="white-space:pre-wrap;">{{ blogpost.full_text }}</p>
+
+    <div style="margin-left:20px;margin-top:20px">
+        <h5>{{ blogpost.blogcomment_set.count }} comments</h5>
+        {% for comment in blogpost.blogcomment_set.all %}
+            <hr>
+            <p>{{comment.commenter}} ({{comment.comment_date}}) - {{comment.comment_text}}</p>
+        {% endfor %}
+        <hr>
+        <a href="{% url 'blog_comment' blogpost.pk %}">Add a new comment</a></p>
+    </div>
+
+{% endblock %}
